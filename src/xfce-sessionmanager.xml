@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<node name="/org/xfce/SessionManager">
+  <interface name="org.xfce.SessionManager">
+    <method name="Shutdown">
+      <arg type="b" name="allow_save" direction="in"/>
+    </method>
+    <method name="Restart">
+      <arg type="b" name="allow_save" direction="in"/>
+    </method>
+    <method name="Hibernate">
+    </method>
+    <method name="Logout">
+      <arg type="b" name="show_dialog" direction="in"/>
+      <arg type="b" name="allow_save" direction="in"/>
+    </method>
+  </interface>
+</node>
