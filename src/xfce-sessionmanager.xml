@@ -1,17 +1,55 @@
-<?xml version="1.0"?>
-<node name="/org/xfce/SessionManager">
-  <interface name="org.xfce.SessionManager">
-    <method name="Shutdown">
-      <arg type="b" name="allow_save" direction="in"/>
-    </method>
-    <method name="Restart">
-      <arg type="b" name="allow_save" direction="in"/>
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.xfce.Session.Manager">
+    <method name="CanHibernate">
+      <arg name="can_hibernate" type="b" direction="out"/>
     </method>
     <method name="Hibernate">
     </method>
-    <method name="Logout">
-      <arg type="b" name="show_dialog" direction="in"/>
-      <arg type="b" name="allow_save" direction="in"/>
+    <method name="CanSuspend">
+      <arg name="can_suspend" type="b" direction="out"/>
     </method>
+    <method name="Suspend">
+    </method>
+    <method name="CanRestart">
+      <arg name="can_restart" type="b" direction="out"/>
+    </method>
+    <method name="Restart">
+      <arg name="allow_save" type="b" direction="in"/>
+    </method>
+    <method name="CanShutdown">
+      <arg name="can_shutdown" type="b" direction="out"/>
+    </method>
+    <method name="Shutdown">
+      <arg name="allow_save" type="b" direction="in"/>
+    </method>
+    <method name="Logout">
+      <arg name="show_dialog" type="b" direction="in"/>
+      <arg name="allow_save" type="b" direction="in"/>
+    </method>
+    <method name="Checkpoint">
+      <arg name="session_name" type="s" direction="in"/>
+    </method>
+    <method name="GetState">
+      <arg name="state" type="u" direction="out"/>
+    </method>
+    <method name="ListClients">
+      <arg name="clients" type="ao" direction="out"/>
+    </method>
+    <method name="GetInfo">
+      <arg name="name" type="s" direction="out"/>
+      <arg name="version" type="s" direction="out"/>
+      <arg name="vendor" type="s" direction="out"/>
+    </method>
+    <signal name="ShutdownCancelled">
+    </signal>
+    <signal name="ClientRegistered">
+      <arg type="s"/>
+    </signal>
+    <signal name="StateChanged">
+      <arg type="u"/>
+      <arg type="u"/>
+    </signal>
   </interface>
 </node>
