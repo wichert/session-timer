@@ -1,6 +1,7 @@
 #include <iostream>
 #include <pangomm.h>
 #include "countwindow.hh"
+#include "gnome-sessionmanager.hh"
 #include "xfce-sessionmanager.hh"
 
 using namespace std;
@@ -71,6 +72,15 @@ bool CountWindow::on_delete_event(GdkEventAny* event) {
 
 
 void CountWindow::logout() {
-	XfceSessionManagerProxy mgr(dbus_connection);
-	mgr.Logout(false, false);
+	try {
+		XfceSessionManagerProxy mgr(dbus_connection);
+		mgr.Logout(false, false);
+	} catch(...) {
+	}
+
+	try {
+		GnomeSessionManagerProxy mgr(dbus_connection);
+		mgr.Logout(GnomeSessionManagerProxy::LogoutMode::NoConfirmation);
+	} catch (...) {
+	}
 }

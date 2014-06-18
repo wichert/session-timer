@@ -1,6 +1,14 @@
 include(GNUInstallDirs)
 
 add_custom_command(
+	OUTPUT gnome-sessionmanager-proxy.hh gnome-sessionmanager-adaptor.hh
+	COMMAND dbusxx-xml2cpp ${CMAKE_CURRENT_SOURCE_DIR}/gnome-sessionmanager.xml
+		--proxy=gnome-sessionmanager-proxy.hh
+		--adaptor=gnome-sessionmanager-adaptor.hh
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gnome-sessionmanager.xml
+	)
+
+add_custom_command(
 	OUTPUT xfce-sessionmanager-proxy.hh xfce-sessionmanager-adaptor.hh
 	COMMAND dbusxx-xml2cpp ${CMAKE_CURRENT_SOURCE_DIR}/xfce-sessionmanager.xml
 		--proxy=xfce-sessionmanager-proxy.hh
@@ -8,9 +16,12 @@ add_custom_command(
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/xfce-sessionmanager.xml
 	)
 
+
 SET(countdown_sources
 	countwindow.cc
 	main.cc
+	gnome-sessionmanager-adaptor.hh
+	gnome-sessionmanager-proxy.hh
 	xfce-sessionmanager-adaptor.hh
 	xfce-sessionmanager-proxy.hh
 	)
