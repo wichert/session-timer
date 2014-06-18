@@ -42,6 +42,14 @@ public:
 		const uint32_t m = static_cast<uint32_t>(mode);
 		org::gnome::SessionManager_proxy::Logout(m);
 	}
+
+	bool active() {
+		try {
+			return SessionIsActive();
+		} catch (const DBus::Error &) {
+			return false;
+		}
+	}
 };
 
 #endif

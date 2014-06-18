@@ -72,15 +72,13 @@ bool CountWindow::on_delete_event(GdkEventAny* event) {
 
 
 void CountWindow::logout() {
-	try {
-		XfceSessionManagerProxy mgr(dbus_connection);
-		mgr.Logout(false, false);
-	} catch(...) {
-	}
+	XfceSessionManagerProxy xfce(dbus_connection);
+	if (xfce.active())
+		xfce.Logout(false, false);
 
-	try {
-		GnomeSessionManagerProxy mgr(dbus_connection);
-		mgr.Logout(GnomeSessionManagerProxy::LogoutMode::NoConfirmation);
-	} catch (...) {
-	}
+	GnomeSessionManagerProxy gnome(dbus_connection);
+	if (gnome.active())
+		gnome.Logout(GnomeSessionManagerProxy::LogoutMode::NoConfirmation);
+
+	// No known session manager found.. damn!
 }
