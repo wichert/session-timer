@@ -1,4 +1,8 @@
+#include <sys/types.h>
+#include <csignal>
+#include <cerrno>
 #include <iostream>
+#include <system_error>
 #include <pangomm.h>
 #include "countwindow.hh"
 #include "gnome-sessionmanager.hh"
@@ -66,19 +70,35 @@ bool CountWindow::update_clock() {
 	return true;
 }
 
+
 bool CountWindow::on_delete_event(GdkEventAny* event) {
 	return true;
 }
 
 
 void CountWindow::logout() {
-	XfceSessionManagerProxy xfce(dbus_connection);
-	if (xfce.active())
-		xfce.Logout(false, false);
+	try {
+		XfceSessionManagerProxy xfce(dbus_connection);
+		if (xfce.active()) {
+			xfce.Logout(false, false);
+			return;
+		}
+	} catch (const DBus::Error&) {
+	}
 
-	GnomeSessionManagerProxy gnome(dbus_connection);
-	if (gnome.active())
-		gnome.Logout(GnomeSessionManagerProxy::LogoutMode::NoConfirmation);
+	try {
+		GnomeSessionManagerProxy gnome(dbus_connection);
+		if (gnome.active()) {
+			gnome.Logout(GnomeSessionManagerProxy::LogoutMode::NoConfirmation);
+			return;
+		}
+	} catch (const DBus::Error&) {
+	}
 
-	// No known session manager found.. damn!
+	// No (supported) session manager found. So lets fall back to a
+	// somewhat brutal but effective approach: kill all our processes.
+	if (kill(-1, SIGTERM)==-1) {
+		cerr << "FATAL: failed to send TERM signal: " << strerror(errno);
+		throw system_error(error_code(errno, generic_category()));
+	}
 }
