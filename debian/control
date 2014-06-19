@@ -1,0 +1,17 @@
+Source: session-timer
+Maintainer: Wichert Akkerman <wichert@wiggy.net>
+Priority: optional
+Section: x11
+Standards-Version: 3.5.8.09
+Build-Depends: cmake, pkg-config, libglibmm-2.4-dev, libpangomm-1.4-dev, libdbus-c++-dev
+Homepage: https://github.com/wichert/session-timer/
+Vcs-Git: https://github.com/wichert/session-timer.git
+
+Package: session-timer
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Limit desktop session time
+ This is a _very_ simple countdown application which will automatically logout
+ a user after a given period of time.
+ .
+ A big timer is shown with a clock counting down until the end of the session.

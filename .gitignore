@@ -1,3 +1,9 @@
 *.sw[po]
 /build
 
+/obj-*
+/debian/debhelper.log
+/debian/files
+/debian/session-timer.debhelper.log
+/debian/session-timer.substvars
+/debian/session-timer
