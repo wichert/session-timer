@@ -32,4 +32,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(countdown ${countdown_sources})
 target_link_libraries(countdown ${GTKMM_LIBRARIES} ${PANGOMM_LIBRARIES} ${DBUS_LIBRARIES})
 
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/countdown DESTINATION bin)
+install(TARGETS countdown
+	RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
+install(FILES countdown.1
+	DESTINATION ${CMAKE_INSTALL_FULL_MANDIR}/man1)
