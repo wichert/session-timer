@@ -10,11 +10,15 @@
 
 using namespace std;
 
-const chrono::minutes lifetime(1);
+const chrono::minutes lifetime(30);
+const chrono::minutes warn_at(2);
 
 CountWindow::CountWindow() :
 		deadline(chrono::steady_clock::now()+lifetime),
+		content_vbox(Gtk::ORIENTATION_VERTICAL, 5),
+		time_header(),
 		time_label(),
+		warning_shown(false),
 		timer_connection(),
 		dbus_connection(DBus::Connection::SessionBus()) {
 	// Use a splash screen as type. This implies we are hidden from
@@ -22,15 +26,22 @@ CountWindow::CountWindow() :
 	set_type_hint(Gdk::WINDOW_TYPE_HINT_SPLASHSCREEN);
 	stick();
 
+	time_header.set_justify(Gtk::JUSTIFY_CENTER);
+	time_header.set_alignment(Gtk::ALIGN_FILL);
+	time_header.set_padding(5, 0);
+	time_header.set_text("Time remaining");
+	content_vbox.pack_start(time_header, Gtk::PACK_SHRINK);
+
 	Pango::AttrList label_attributes;
 	auto fontsize = Pango::Attribute::create_attr_size(Pango::SCALE*50);
 	label_attributes.change(fontsize);
 
 	time_label.set_use_markup(false);
 	time_label.set_attributes(label_attributes);
-	time_label.show();
 	update_clock();
-	add(time_label);
+	content_vbox.pack_start(time_label, Gtk::PACK_SHRINK);
+	add(content_vbox);
+	show_all_children();
 
 	sigc::slot<bool> slot = sigc::mem_fun(*this, &CountWindow::update_clock);
 	sigc::connection conn = Glib::signal_timeout().connect_seconds(slot, 1);
@@ -40,6 +51,21 @@ CountWindow::CountWindow() :
 CountWindow::~CountWindow() {
 }
 
+
+void CountWindow::show_warning() {
+	Gtk::MessageDialog dialog(*this,
+			"Your session will end in two minutes.",
+			false,
+			Gtk::MESSAGE_WARNING,
+			Gtk::BUTTONS_OK,
+			true);
+	dialog.set_secondary_text(
+			"You will automatically be logged out soon. Plesae make "
+			"sure all finish your work before this happens. When "
+			"you are logged out <b>all your data will be deleted</b>.",
+			true);
+	dialog.run();
+}
 
 chrono::seconds CountWindow::time_remaining() const {
 	auto remaining = deadline-chrono::steady_clock::now();
@@ -66,7 +92,13 @@ bool CountWindow::update_clock() {
 
 	char buffer[16];
 	snprintf(buffer, sizeof(buffer), "%02ld:%02ld", remaining.count()/60, remaining.count()%60);
-	time_label.set_label(buffer);
+	time_label.set_text(buffer);
+
+	if (!warning_shown && remaining<warn_at) {
+		warning_shown=true;
+		show_warning();
+	}
+
 	return true;
 }
 
