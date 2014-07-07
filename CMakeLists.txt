@@ -24,6 +24,14 @@ pkg_check_modules(DBUS dbus-c++-glib-1 REQUIRED)
 include_directories(SYSTEM ${DBUS_INCLUDE_DIRS})
 link_directories(${DBUS_LIBRARY_DIRS})
 
+pkg_check_modules(X11 x11 REQUIRED)
+include_directories(SYSTEM ${X11_INCLUDE_DIRS})
+link_directories(${X11_LIBRARY_DIRS})
+
+pkg_check_modules(XSS xscrnsaver REQUIRED)
+include_directories(SYSTEM ${XSS_INCLUDE_DIRS})
+link_directories(${XSS_LIBRARY_DIRS})
+
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})

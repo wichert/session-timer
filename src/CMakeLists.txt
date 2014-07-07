@@ -19,6 +19,7 @@ add_custom_command(
 
 SET(countdown_sources
 	countwindow.cc
+	idle.cc
 	main.cc
 	gnome-sessionmanager-adaptor.hh
 	gnome-sessionmanager-proxy.hh
@@ -30,7 +31,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(countdown ${countdown_sources})
-target_link_libraries(countdown ${GTKMM_LIBRARIES} ${PANGOMM_LIBRARIES} ${DBUS_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(countdown ${GTKMM_LIBRARIES} ${X11_LIBRARIES} ${XSS_LIBRARIES} ${PANGOMM_LIBRARIES} ${DBUS_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 install(TARGETS countdown
 	RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
