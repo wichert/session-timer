@@ -8,7 +8,7 @@
 
 class CountWindow : public Gtk::Window {
 public:
-	CountWindow();
+	CountWindow(int _lifetime=30);
 	virtual ~CountWindow();
 
 protected:
@@ -18,6 +18,7 @@ protected:
 	virtual bool on_delete_event(GdkEventAny*);
 	std::chrono::seconds time_remaining() const;
 
+	std::chrono::minutes lifetime;
 	std::chrono::steady_clock::time_point deadline;
 	Gtk::Box content_vbox;
 	Gtk::Label time_header;

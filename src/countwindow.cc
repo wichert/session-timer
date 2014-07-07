@@ -10,10 +10,10 @@
 
 using namespace std;
 
-const chrono::minutes lifetime(30);
 const chrono::minutes warn_at(2);
 
-CountWindow::CountWindow() :
+CountWindow::CountWindow(int _lifetime) :
+		lifetime(_lifetime),
 		deadline(chrono::steady_clock::now()+lifetime),
 		content_vbox(Gtk::ORIENTATION_VERTICAL, 5),
 		time_header(),

@@ -24,4 +24,8 @@ pkg_check_modules(DBUS dbus-c++-glib-1 REQUIRED)
 include_directories(SYSTEM ${DBUS_INCLUDE_DIRS})
 link_directories(${DBUS_LIBRARY_DIRS})
 
+find_package(Boost REQUIRED COMPONENTS program_options)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
 add_subdirectory(src)
