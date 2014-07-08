@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sys/types.h>
 #include <csignal>
 #include <cerrno>
@@ -12,15 +13,20 @@ using namespace std;
 
 const chrono::minutes warn_at(2);
 
-CountWindow::CountWindow(int _lifetime) :
+
+CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes _idle_timeout ) :
 		lifetime(_lifetime),
+		idle_timeout(_idle_timeout),
 		deadline(chrono::steady_clock::now()+lifetime),
 		content_vbox(Gtk::ORIENTATION_VERTICAL, 5),
 		time_header(),
 		time_label(),
-		warning_shown(false),
+		deadline_warning_shown(false),
 		timer_connection(),
-		dbus_connection(DBus::Connection::SessionBus()) {
+		dbus_connection(DBus::Connection::SessionBus()),
+		screensaver(),
+		deadline_warning_dialog(nullptr),
+		idle_warning_dialog(nullptr) {
 	// Use a splash screen as type. This implies we are hidden from
 	// the taskbar and are always shown on top.
 	set_type_hint(Gdk::WINDOW_TYPE_HINT_SPLASHSCREEN);
@@ -43,7 +49,7 @@ CountWindow::CountWindow(int _lifetime) :
 	add(content_vbox);
 	show_all_children();
 
-	sigc::slot<bool> slot = sigc::mem_fun(*this, &CountWindow::update_clock);
+	sigc::slot<bool> slot = sigc::mem_fun(*this, &CountWindow::update);
 	sigc::connection conn = Glib::signal_timeout().connect_seconds(slot, 1);
 }
 
@@ -52,20 +58,78 @@ CountWindow::~CountWindow() {
 }
 
 
-void CountWindow::show_warning() {
-	Gtk::MessageDialog dialog(*this,
+void CountWindow::show_deadline_warning() {
+	deadline_warning_dialog = new Gtk::MessageDialog(*this,
 			"Your session will end in two minutes.",
 			false,
 			Gtk::MESSAGE_WARNING,
 			Gtk::BUTTONS_OK,
 			true);
-	dialog.set_secondary_text(
+	deadline_warning_dialog->set_secondary_text(
 			"You will automatically be logged out soon. Plesae make "
 			"sure all finish your work before this happens. When "
 			"you are logged out <b>all your data will be deleted</b>.",
 			true);
-	dialog.run();
+
+	deadline_warning_dialog->signal_response().connect([&] (int response_id) {
+		if (response_id==GTK_RESPONSE_OK)
+			deadline_warning_dialog->close();
+	});
+
+	deadline_warning_dialog->set_application(get_application());
+	deadline_warning_dialog->show();
 }
+
+
+void CountWindow::show_idle_warning() {
+	if (idle_warning_dialog)
+		return;
+
+	idle_warning_dialog=new Gtk::MessageDialog(*this,
+			"Your have been idle for 4 minutes.",
+			false,
+			Gtk::MESSAGE_WARNING,
+			Gtk::BUTTONS_OK,
+			true);
+	idle_warning_dialog->set_secondary_text(
+			"You do not seem to be using this computer anymore. If you "
+			"remain idle <b>you will be logged automatcially in one "
+			"minute</b> if you remain idle. Please note that when "
+			"this happens <b>all your data will be deleted</b>.",
+			true);
+
+	idle_warning_dialog->signal_response().connect([&] (int response_id) {
+		if (response_id==GTK_RESPONSE_OK) {
+			idle_warning_dialog->close();
+			idle_warning_dialog=nullptr;
+		}
+	});
+
+	idle_warning_dialog->set_application(get_application());
+	idle_warning_dialog->show();
+}
+
+
+bool CountWindow::update() {
+	update_clock();
+	check_idle_time();
+	return true;;
+}
+
+
+void CountWindow::check_idle_time() {
+	chrono::milliseconds idle_time(screensaver.idle_time());
+
+	if (idle_time>idle_timeout) {
+		logout();
+		return;
+	}
+
+	auto warn_at = (chrono::duration_cast<chrono::milliseconds>(idle_timeout)*4)/5;
+	if (idle_time>warn_at)
+		show_idle_warning();
+}
+
 
 chrono::seconds CountWindow::time_remaining() const {
 	auto remaining = deadline-chrono::steady_clock::now();
@@ -73,10 +137,10 @@ chrono::seconds CountWindow::time_remaining() const {
 }
 
 
-bool CountWindow::update_clock() {
+void CountWindow::update_clock() {
 	if (chrono::steady_clock::now()>=deadline) {
 		logout();
-		return false;
+		return;
 	}
 
 	chrono::seconds remaining = time_remaining();
@@ -94,12 +158,10 @@ bool CountWindow::update_clock() {
 	snprintf(buffer, sizeof(buffer), "%02ld:%02ld", remaining.count()/60, remaining.count()%60);
 	time_label.set_text(buffer);
 
-	if (!warning_shown && remaining<warn_at) {
-		warning_shown=true;
-		show_warning();
+	if (!deadline_warning_shown && remaining<warn_at) {
+		deadline_warning_shown=true;
+		show_deadline_warning();
 	}
-
-	return true;
 }
 
 

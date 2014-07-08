@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
 	desc.add_options()
 		("help", "Display this help and exit.")
 		("period", po::value<int>()->value_name("MINUTES")->default_value(30), "Maximum session period in minutes")
+		("idle-timeout", po::value<int>()->value_name("MINUTES")->default_value(5), "Maximum idle timeout in minutes")
 		;
 	po::variables_map config;
 	try {
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
 	DBus::_init_threading();
 	DBus::default_dispatcher=&dbus_dispatcher;
 
-	CountWindow window(config["period"].as<int>());
+	CountWindow window(chrono::minutes(config["period"].as<int>()), chrono::minutes(config["idle-timeout"].as<int>()));
 	return app->run(window, 1, argv);
 }
 
