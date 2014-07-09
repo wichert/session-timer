@@ -13,6 +13,22 @@ using namespace std;
 
 const chrono::minutes warn_at(2);
 
+enum {
+	STRUT_LEFT = 0,
+	STRUT_RIGHT,
+	STRUT_TOP,
+	STRUT_BOTTOM,
+	STRUT_LEFT_START_Y,
+	STRUT_LEFT_END_Y,
+	STRUT_RIGHT_START_Y,
+	STRUT_RIGHT_END_Y,
+	STRUT_TOP_START_X,
+	STRUT_TOP_END_X,
+	STRUT_BOTTOM_START_X,
+	STRUT_BOTTOM_END_X,
+	N_STRUTS
+};
+
 
 CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes _idle_timeout ) :
 		lifetime(_lifetime),
@@ -53,6 +69,19 @@ CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes 
 
 	add(content_grid);
 	show_all_children();
+
+	signal_realize().connect([this] () {
+		auto wm_strut_partial_atom = gdk_atom_intern_static_string("_NET_WM_STRUT_PARTIAL");
+		auto cardinal_atom = gdk_atom_intern_static_string("CARDINAL");
+		gulong struts[N_STRUTS];
+		struts[STRUT_LEFT]=struts[STRUT_RIGHT]=struts[STRUT_BOTTOM]=0;
+		struts[STRUT_TOP]=30;
+		struts[STRUT_TOP_START_X]=0;
+		struts[STRUT_TOP_END_X]=get_screen()->get_width();
+		gdk_property_change(get_window()->gobj(),
+				wm_strut_partial_atom, cardinal_atom, 32, GDK_PROP_MODE_REPLACE,
+				reinterpret_cast<const guchar*>(&struts), N_STRUTS);
+	});
 
 	sigc::slot<bool> slot = sigc::mem_fun(*this, &CountWindow::update);
 	sigc::connection conn = Glib::signal_timeout().connect_seconds(slot, 1);
