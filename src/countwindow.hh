@@ -27,9 +27,9 @@ protected:
 	std::chrono::minutes lifetime;
 	std::chrono::minutes idle_timeout;
 	std::chrono::steady_clock::time_point deadline;
-	Gtk::Box content_vbox;
-	Gtk::Label time_header;
+	Gtk::Grid content_grid;
 	Gtk::Label time_label;
+	Gtk::Button logout_button;
 	bool deadline_warning_shown;
 	sigc::connection timer_connection;
 	DBus::Connection dbus_connection;

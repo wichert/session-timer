@@ -18,35 +18,40 @@ CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes 
 		lifetime(_lifetime),
 		idle_timeout(_idle_timeout),
 		deadline(chrono::steady_clock::now()+lifetime),
-		content_vbox(Gtk::ORIENTATION_VERTICAL, 5),
-		time_header(),
+		content_grid(),
 		time_label(),
+		logout_button(),
 		deadline_warning_shown(false),
 		timer_connection(),
 		dbus_connection(DBus::Connection::SessionBus()),
 		screensaver(),
 		deadline_warning_dialog(nullptr),
 		idle_warning_dialog(nullptr) {
-	// Use a splash screen as type. This implies we are hidden from
-	// the taskbar and are always shown on top.
-	set_type_hint(Gdk::WINDOW_TYPE_HINT_SPLASHSCREEN);
+	set_type_hint(Gdk::WINDOW_TYPE_HINT_DOCK);
+	set_skip_taskbar_hint();
+	set_skip_pager_hint();
+	set_accept_focus(false);
+	set_resizable(false);
+	set_keep_above();
+	set_decorated(false);
 	stick();
 
-	time_header.set_justify(Gtk::JUSTIFY_CENTER);
-	time_header.set_alignment(Gtk::ALIGN_FILL);
-	time_header.set_padding(5, 0);
-	time_header.set_text("Time remaining");
-	content_vbox.pack_start(time_header, Gtk::PACK_SHRINK);
+	Gdk::Geometry geometry;
+	geometry.min_height=geometry.max_height=30;
+	geometry.min_width=geometry.max_width=get_screen()->get_width();
+	set_geometry_hints(*this, geometry, Gdk::HINT_MIN_SIZE | Gdk::HINT_MAX_SIZE);
 
-	Pango::AttrList label_attributes;
-	auto fontsize = Pango::Attribute::create_attr_size(Pango::SCALE*50);
-	label_attributes.change(fontsize);
-
-	time_label.set_use_markup(false);
-	time_label.set_attributes(label_attributes);
+	time_label.set_justify(Gtk::JUSTIFY_CENTER);
+	time_label.set_padding(5, 0);
+	content_grid.attach(time_label, 0, 0, 1, 1);
 	update_clock();
-	content_vbox.pack_start(time_label, Gtk::PACK_SHRINK);
-	add(content_vbox);
+
+	logout_button.set_label("Logout");
+	logout_button.set_image_from_icon_name(GTK_STOCK_QUIT);
+	logout_button.set_always_show_image();
+	content_grid.attach_next_to(logout_button, time_label, Gtk::POS_RIGHT, 1, 1);
+
+	add(content_grid);
 	show_all_children();
 
 	sigc::slot<bool> slot = sigc::mem_fun(*this, &CountWindow::update);
@@ -151,12 +156,10 @@ void CountWindow::update_clock() {
 	label_attributes.change(colour);
 	time_label.set_attributes(label_attributes);
 
-	auto fontsize = Pango::Attribute::create_attr_size(Pango::SCALE*50);
-	label_attributes.change(fontsize);
-
-	char buffer[16];
-	snprintf(buffer, sizeof(buffer), "%02ld:%02ld", remaining.count()/60, remaining.count()%60);
-	time_label.set_text(buffer);
+	char buffer[64];
+	snprintf(buffer, sizeof(buffer), "Time remaining: <b>%02ld:%02ld</b>",
+			remaining.count()/60, remaining.count()%60);
+	time_label.set_markup(buffer);
 
 	if (!deadline_warning_shown && remaining<warn_at) {
 		deadline_warning_shown=true;
