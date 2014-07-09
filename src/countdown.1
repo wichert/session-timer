@@ -3,7 +3,8 @@
 session-timer \- Time limit a desktop session
 .SH SYNOPSIS
 .B session-timer
-[-option ...]
+[\fB\-\-period\fR <minutes>]
+[\fB\-\-idle\-timeout\fR <minutes>]
 .SH DESCRIPTION
 .I session-timer
 is a very simple countdown application which puts a time limit on a
@@ -12,10 +13,18 @@ desktop session.
 A big timer is shown with a clock counting down until the end of the session.
 The digits will slowly turn red once the end of the session approaches.
 .PP
-5 minutes before the session ends a warning will be shown to the user. Once
-the timer hits zero the session is ended. How this is done depends on the
-session type: if the GNOME or Xfce session manager is running they will
-asked to logout the current user. If this fails, or no (known) session manager
-is running all processes for the user will be send a TERM signal.
+5 minutes before the session ends a warning will be shown to the user.
+Once the timer hits zero the session is ended.
+How this is done depends on the session type:
+if the GNOME or Xfce session manager is running they will asked to logout the current user.
+If this fails, or no (known) session manager is running all processes for the user will be send a TERM signal.
+.SH OPTIONS
+.TP
+.BR \-\-period =\fIminutes\fR
+Set the maximum allowed session time in minutes. Defaults to 30 minutes.
+.TP
+.BR \-\-idle\-timeout =\fIminutes\fR
+Set the maximum allowed idle timeout time in minutes. Defaults to 5 minutes.
+Users will get a warning once 80% of the idle time has passed.
 .SH AUTHOR
 Wichert Akkerman
