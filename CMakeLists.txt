@@ -7,6 +7,8 @@ set(VERSION 1.0.0)
 set(COPYRIGHT_HOLDER Simplon B.V.)
 set(PACKAGE_BUGREPORT wichert@simplon.biz)
 
+include(GNUInstallDirs)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIBMM glibmm-2.4 REQUIRED)
 include_directories(SYSTEM ${GLIBMM_INCLUDE_DIRS})
