@@ -22,6 +22,10 @@ pkg_check_modules(PANGOMM pangomm-1.4 REQUIRED)
 include_directories(SYSTEM ${PANGOMM_INCLUDE_DIRS})
 link_directories(${PANGOMM_LIBRARY_DIRS})
 
+pkg_check_modules(GDK_PIXBUF_XLIB gdk-pixbuf-xlib-2.0 REQUIRED)
+include_directories(SYSTEM ${GDK_PIXBUF_XLIB_INCLUDE_DIRS})
+link_directories(${GDK_PIXBUF_XLIB_LIBRARY_DIRS})
+
 pkg_check_modules(DBUS dbus-c++-glib-1 REQUIRED)
 include_directories(SYSTEM ${DBUS_INCLUDE_DIRS})
 link_directories(${DBUS_LIBRARY_DIRS})
@@ -34,7 +38,7 @@ pkg_check_modules(XSS xscrnsaver REQUIRED)
 include_directories(SYSTEM ${XSS_INCLUDE_DIRS})
 link_directories(${XSS_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED COMPONENTS program_options)
+find_package(Boost REQUIRED COMPONENTS program_options log system thread)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 

@@ -1,0 +1,13 @@
+#root {
+	background-image: url("/usr/share/plymouth/themes/spacefun/background.png");
+	border-image-repeat: stretch;
+}
+
+#container {
+}
+
+GtkButton {
+	margin: 15px;
+	font-size: 40px;
+	font-weight: bold;
+}

@@ -70,6 +70,8 @@ CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes 
 	add(content_grid);
 	show_all_children();
 
+	// Reserve the top part of the screen so the window manager will never
+	// put anything on top of it.
 	signal_realize().connect([this] () {
 		auto wm_strut_partial_atom = gdk_atom_intern_static_string("_NET_WM_STRUT_PARTIAL");
 		auto cardinal_atom = gdk_atom_intern_static_string("CARDINAL");
