@@ -30,3 +30,18 @@ void SignalFD::add_signal(int signal) {
 	if ((signal_fd=signalfd(signal_fd, &mask, SFD_NONBLOCK|SFD_CLOEXEC))==-1)
 		throw system_error(errno, system_category());
 }
+
+
+void SignalFD::update() {
+	signalfd_siginfo info;
+	auto s = read(signal_fd, &info, sizeof(info));
+	if (s!=sizeof(info))
+		throw system_error(errno, system_category());
+	signal(info);
+}
+
+
+boost::signals2::connection SignalFD::connect(const signal_type::slot_type &sub) {
+	return signal.connect(sub);
+}
+

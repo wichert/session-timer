@@ -8,9 +8,15 @@
 
 class SignalFD {
 public:
+	typedef boost::signals2::signal<void(const signalfd_siginfo&)> signal_type;
+
 	SignalFD() = delete;
 	SignalFD(int signal);
 	~SignalFD();
+
+	// No copying
+	SignalFD(const SignalFD&) = delete;
+	SignalFD& operator=(const SignalFD&) = delete;
 
 	void add_signal(int signal);
 
@@ -19,10 +25,10 @@ public:
 	}
 
 	void update();
-
-	boost::signals2::signal<void(signalfd_siginfo)> signal;
+	boost::signals2::connection connect(const signal_type::slot_type &sub);
 
 private:
+	boost::signals2::signal<void(const signalfd_siginfo&)> signal;
 	sigset_t original_mask;
 	sigset_t mask;
 	int signal_fd;
