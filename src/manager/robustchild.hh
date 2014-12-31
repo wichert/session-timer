@@ -19,7 +19,7 @@ public:
 
 private:
 	void execChild();
-
+	void onChildSignal(const signalfd_siginfo& info);
 
 	std::vector<const char*> command;
 	SignalFD signal_handler;

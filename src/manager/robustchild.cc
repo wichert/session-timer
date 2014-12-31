@@ -11,6 +11,8 @@ RobustChild::RobustChild(initializer_list<const char*> command) :
 	signal_handler(SIGCHLD),
 	status(State::ready),
 	pid(-1) {
+	auto sub = boost::bind(&RobustChild::onChildSignal, this);
+	signal_handler.connect(sub);
 }
 
 
@@ -59,4 +61,8 @@ void RobustChild::execChild() {
 	throw system_error(errno, generic_category());
 }
 
+
+void RobustChild::onChildSignal(const signalfd_siginfo& info) {
+
+}
 
