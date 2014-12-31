@@ -1,5 +1,7 @@
 SET(manager_sources
 	main.cc
+	signalfd.cc
+	robustchild.cc
 	)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
