@@ -9,6 +9,11 @@ public:
 	RobustChild() = delete;
 	RobustChild(std::initializer_list<const char*> command);
 	virtual ~RobustChild();
+
+	// No copying
+	RobustChild(const RobustChild&) = delete;
+	RobustChild& operator=(const RobustChild&) = delete;
+
 	void start();
 	void stop();
 
