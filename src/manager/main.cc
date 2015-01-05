@@ -37,14 +37,6 @@ enum class State {
 };
 
 
-bool startWelcome() {
-	pid_t pid = fork();
-	if (pid==-1) {
-		return false;
-	}
-}
-
-
 void setupLogging(bool debug) {
 	auto core = logging::core::get();
 
