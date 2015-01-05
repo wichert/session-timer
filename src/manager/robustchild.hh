@@ -31,6 +31,7 @@ private:
 	enum class State { ready, running, stopping, finished, failed };
 	State status;
 	pid_t pid;
+	int error_count;
 };
 
 #endif

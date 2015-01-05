@@ -12,7 +12,8 @@ RobustChild::RobustChild(shared_ptr<Poller> poller, command_type&& command) :
 		command(command),
 		signal_handler(make_shared<SignalFD>(SIGCHLD)),
 		status(State::ready),
-		pid(-1) {
+		pid(-1),
+		error_count(0) {
 	signal_handler->connect([&](const signalfd_siginfo& info) {
 			return onChildSignal(info);
 			});
@@ -68,6 +69,36 @@ void RobustChild::execChild() {
 
 
 void RobustChild::onChildSignal(const signalfd_siginfo& info) {
-	BOOST_LOG_TRIVIAL(info) << "RobustChild signal handler called";
+	if (info.ssi_signo!=SIGCHLD) {
+		BOOST_LOG_TRIVIAL(error) << "Invalid signal received: " << info.ssi_signo;
+		return;
+	}
+
+	bool can_retry = false;
+
+	switch  (info.ssi_code) {
+		case CLD_EXITED:
+			if (info.ssi_status!=0) {
+				BOOST_LOG_TRIVIAL(warning) << "Child exited with exit code " << info.ssi_status;
+				status=State::failed;
+				error_count++;
+			} else {
+				BOOST_LOG_TRIVIAL(info) << "Child exited normally";
+				status=State::finished;
+			}
+			break;
+		case CLD_KILLED:
+		case CLD_DUMPED:
+			BOOST_LOG_TRIVIAL(warning) << "Child killed with signal " << info.ssi_status;
+			status=State::failed;
+			error_count++;
+			can_retry=true;
+			break;
+	}
+
+	if (can_retry && status==State::failed && error_count<5) {
+		BOOST_LOG_TRIVIAL(info) << "Restarting child process";
+		start();
+	}
 }
 
