@@ -3,7 +3,7 @@ Maintainer: Wichert Akkerman <wichert@wiggy.net>
 Priority: optional
 Section: x11
 Standards-Version: 3.5.8.09
-Build-Depends: cmake, pkg-config, libglibmm-2.4-dev, libpangomm-1.4-dev, libdbus-c++-dev, libboost-log-dev, libboost-program-options-dev, libxss-dev
+Build-Depends: cmake, pkg-config, libglibmm-2.4-dev, libpangomm-1.4-dev, libdbus-c++-dev, libboost-log-dev, libboost-program-options-dev, libboost-signals-dev, libboost-log-dev, libxss-dev
 Homepage: https://github.com/wichert/session-timer/
 Vcs-Git: https://github.com/wichert/session-timer.git
 

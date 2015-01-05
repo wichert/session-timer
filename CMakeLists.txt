@@ -38,8 +38,10 @@ pkg_check_modules(XSS xscrnsaver REQUIRED)
 include_directories(SYSTEM ${XSS_INCLUDE_DIRS})
 link_directories(${XSS_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED COMPONENTS program_options log system thread)
+find_package(Boost REQUIRED COMPONENTS program_options log system thread log)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
+
+add_definitions(-DBOOST_ALL_DYN_LINK)
 
 add_subdirectory(src)
