@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	shared_ptr<Poller> poller = make_shared<Poller>(); 
 	RobustChild child(poller, {"invalid-command"});
 	child.start();
-	poller->run();
+	poller->runOnce();
 
 	return 0;
 }

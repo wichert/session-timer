@@ -36,7 +36,8 @@ public:
 	Poller(const Poller&) = delete;
 	Poller& operator=(const Poller&) = delete;
 
-	void run();
+	void runForever();
+	void runOnce();
 
 	iterator begin() noexcept {
 		return fds.begin();

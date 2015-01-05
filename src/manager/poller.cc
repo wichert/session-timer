@@ -33,17 +33,25 @@ void Poller::remove_from_epoll(shared_ptr<Pollee> pollee) {
 }
 
 
-void Poller::run() {
+void Poller::runForever() {
+	while (!empty())
+		runOnce();
+}
+
+
+
+void Poller::runOnce() {
+	if (empty())
+		return;
+
 	epoll_event events[10];
 	int event_count, i;
 
-	while (!empty()) {
-		if ((event_count=epoll_wait(epoll_fd, events, 10, -1))==-1)
-			throw system_error(errno, system_category());
-		for (i=0; i<event_count; i++) {
-			auto p = reinterpret_cast<Pollee*>(events[i].data.ptr);
-			p->update();
-		}
+	if ((event_count=epoll_wait(epoll_fd, events, 10, -1))==-1)
+		throw system_error(errno, system_category());
+	for (i=0; i<event_count; i++) {
+		auto p = reinterpret_cast<Pollee*>(events[i].data.ptr);
+		p->update();
 	}
 }
 
