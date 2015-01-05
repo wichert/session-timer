@@ -65,31 +65,6 @@ void setupLogging(bool debug) {
 }
 
 
-void handleChildExit(int signal, siginfo_t* info, void* ucontext) {
-	int status;
-	int pid;
-
-	if (info->si_signo!=SIGCHLD || info->si_code!=CLD_EXITED) {
-		BOOST_LOG_TRIVIAL(warning) << "Invalid signal received, ignoring it";
-		return;
-
-	}
-	if ((pid=waitpid(info->si_pid, &status, WNOHANG))==-1)
-		throw system_error(errno, system_category());
-	else if (pid==0) {
-		// We got a signal, but no process was waiting to be reaped.
-		// This should never happen, but we'll just assume a normal exit.
-		BOOST_LOG_TRIVIAL(info) << "SIGCHLD signal received, but child process is not waiting";
-		return;
-	}
-
-	if (info->si_status!=0) {
-		BOOST_LOG_TRIVIAL(warning) << "Child process exited abnormally, restarting";
-	}
-}
-
-
-
 int main(int argc, char *argv[]) {
 	po::options_description desc("Allowed options");
 	desc.add_options()
