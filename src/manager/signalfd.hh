@@ -4,9 +4,10 @@
 #include <csignal>
 #include <sys/signalfd.h>
 #include <boost/signals2.hpp>
+#include "poller.hh"
 
 
-class SignalFD {
+class SignalFD : public Pollee {
 public:
 	typedef boost::signals2::signal<void(const signalfd_siginfo&)> signal_type;
 
@@ -20,11 +21,11 @@ public:
 
 	void add_signal(int signal);
 
-	int fd() {
+	int fd() const {
 		return signal_fd;
 	}
 
-	void update();
+	virtual void update();
 	boost::signals2::connection connect(const signal_type::slot_type &sub);
 
 private:

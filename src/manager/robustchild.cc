@@ -2,23 +2,28 @@
 #include <stdexcept>
 #include <system_error>
 #include <unistd.h>
+#include <boost/log/trivial.hpp>
 #include "robustchild.hh"
 
 using namespace std;
 
-RobustChild::RobustChild(initializer_list<const char*> command) :
-	command(command),
-	signal_handler(SIGCHLD),
-	status(State::ready),
-	pid(-1) {
-	auto sub = boost::bind(&RobustChild::onChildSignal, this);
-	signal_handler.connect(sub);
+RobustChild::RobustChild(shared_ptr<Poller> poller, command_type&& command) :
+		poller(poller),
+		command(command),
+		signal_handler(make_shared<SignalFD>(SIGCHLD)),
+		status(State::ready),
+		pid(-1) {
+	signal_handler->connect([&](const signalfd_siginfo& info) {
+			return onChildSignal(info);
+			});
+	poller->insert(signal_handler);
 }
 
 
 RobustChild::~RobustChild() {
 	if (status==State::running)
 		stop();
+	poller->erase(signal_handler);
 }
 
 
@@ -63,6 +68,6 @@ void RobustChild::execChild() {
 
 
 void RobustChild::onChildSignal(const signalfd_siginfo& info) {
-
+	BOOST_LOG_TRIVIAL(info) << "RobustChild signal handler called";
 }
 
