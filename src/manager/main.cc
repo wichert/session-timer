@@ -3,8 +3,6 @@
 #include <csignal>
 #include <iostream>
 #include <system_error>
-// Must define BOOST_LOG_DLL to fix linking errors with the log library
-#define BOOST_LOG_DLL
 #include <boost/make_shared.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
