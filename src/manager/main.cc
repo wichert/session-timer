@@ -78,6 +78,8 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	setupLogging(config.count("debug"));
+
 	shared_ptr<Poller> poller = make_shared<Poller>(); 
 	RobustChild child(poller, {"invalid-command"});
 	child.start();
