@@ -4,7 +4,7 @@ enable_testing()
 
 set(PACKGE countdown)
 set(VERSION 1.0.0)
-set(COPYRIGHT_HOLDER Simplon B.V.)
+set(COPYRIGHT_HOLDER Attingo Services B.V.)
 set(PACKAGE_BUGREPORT wichert@simplon.biz)
 
 include(GNUInstallDirs)
