@@ -20,10 +20,7 @@ public:
 		return state;
 	}
 
-	void set(State st, bool track=true) {
-		// XXX Push state to monitoring server
-		state=st;
-	}
+	void set(State st, bool track=true);
 
 	bool operator==(State st) {
 		return state==st;

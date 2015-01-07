@@ -3,6 +3,7 @@ SET(manager_sources
 	signalfd.cc
 	robustchild.cc
 	poller.cc
+	state.cc
 	)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -19,6 +20,7 @@ target_link_libraries(kiosk-manager
 	${Boost_LOG_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_THREAD_LIBRARY}
+	${CPPNETLIB_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS kiosk-manager

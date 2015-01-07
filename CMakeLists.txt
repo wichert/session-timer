@@ -7,6 +7,8 @@ set(VERSION 1.0.0)
 set(COPYRIGHT_HOLDER Attingo Services B.V.)
 set(PACKAGE_BUGREPORT wichert@simplon.biz)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 include(GNUInstallDirs)
 
 find_package(PkgConfig REQUIRED)
@@ -42,6 +44,10 @@ set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS program_options log system thread log)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
+
+find_package(cppnetlib 0.11.0 REQUIRED)
+include_directories(${CPPNETLIB_INCLUDE_DIRS})
+link_directories(${CPPNETLIB_LIB_DIRS})
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
 
