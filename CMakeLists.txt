@@ -38,6 +38,7 @@ pkg_check_modules(XSS xscrnsaver REQUIRED)
 include_directories(SYSTEM ${XSS_INCLUDE_DIRS})
 link_directories(${XSS_LIBRARY_DIRS})
 
+set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS program_options log system thread log)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
