@@ -3,12 +3,14 @@
 
 #include <memory>
 #include <initializer_list>
+#include <string>
 #include "signalfd.hh"
 #include "poller.hh"
 
 class RobustChild {
 public:
-	typedef std::vector<const char*> command_type;
+	typedef std::vector<std::string> command_type;
+	enum class State { ready, running, stopping, finished, failed };
 
 	RobustChild() = delete;
 	RobustChild(std::shared_ptr<Poller> poller, command_type&& command);
@@ -21,6 +23,8 @@ public:
 	void start();
 	void stop();
 
+	State status; // XXX Rename to state
+
 private:
 	void execChild();
 	void onChildSignal(const signalfd_siginfo& info);
@@ -28,8 +32,6 @@ private:
 	std::shared_ptr<Poller> poller;
 	command_type command;
 	std::shared_ptr<SignalFD> signal_handler;
-	enum class State { ready, running, stopping, finished, failed };
-	State status;
 	pid_t pid;
 	int error_count;
 };

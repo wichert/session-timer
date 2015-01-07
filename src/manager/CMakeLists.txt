@@ -8,6 +8,9 @@ SET(manager_sources
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+add_definitions(-DLIBEXEC_PATH="${CMAKE_INSTALL_FULL_LIBEXECDIR}/${PROJECT_NAME}")
+add_definitions(-DXSESSION_PATH="/etc/X11/Xsession")
+
 find_package(Threads)
 
 add_executable(kiosk-manager ${manager_sources})

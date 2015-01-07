@@ -13,6 +13,7 @@
 #include <boost/program_options.hpp>
 #include "null_deleter.hh"
 #include "robustchild.hh"
+#include "state.hh"
 
 
 using namespace std;
@@ -29,11 +30,11 @@ namespace keywords = boost::log::keywords;
  */
 
 
-enum class State {
-	Idle,
-	LoggedIn,
-	Resetting,
-	Error,
+struct config_data {
+	bool debug;
+	string welcome_command;
+	string countdown_command;
+	string xsession_command;
 };
 
 
@@ -57,33 +58,140 @@ void setupLogging(bool debug) {
 }
 
 
+void runLoginState(shared_ptr<Poller> poller, StateTracker &state, const config_data &config) {
+	auto login = make_shared<RobustChild>(poller, initializer_list<string>{config.welcome_command});
+	state.set(State::Idle);
+	login->start();
+
+	while (state==State::Idle) {
+		poller->runOnce();
+		switch (login->status) {
+			case RobustChild::State::ready:
+			case RobustChild::State::running:
+				// Non-login related interruption
+				break;
+			case RobustChild::State::stopping: // Should not happen since we never call stop()
+				BOOST_LOG_TRIVIAL(error) << "Login process stopping unexpectedly";
+				state.set(State::Error);
+				break;
+			case RobustChild::State::finished:
+				BOOST_LOG_TRIVIAL(info) << "Login process exited without error";
+				state.set(State::LoggingIn, false);
+				break;
+			case RobustChild::State::failed:
+				BOOST_LOG_TRIVIAL(warning) << "Login process exited with error";
+				state.set(State::Error);
+				break;
+		}
+	}
+}
+
+
+void runDesktopState(shared_ptr<Poller> poller, StateTracker &state, const config_data &config) {
+	auto xsession = make_shared<RobustChild>(poller, initializer_list<string>{config.xsession_command});
+	auto countdown = make_shared<RobustChild>(poller, initializer_list<string>{config.countdown_command});
+	state.set(State::InUse);
+	xsession->start();
+	countdown->start();
+
+	while (state==State::InUse) {
+		poller->runOnce();
+		switch (xsession->status) {
+			case RobustChild::State::ready:
+			case RobustChild::State::running:
+				break;
+			case RobustChild::State::stopping: // Should not happen since we never call stop()
+				state.set(State::Error);
+				break;
+			case RobustChild::State::finished:
+				BOOST_LOG_TRIVIAL(info) << "Xsession lougout";
+				state.set(State::Resetting);
+				break;
+			case RobustChild::State::failed:
+				BOOST_LOG_TRIVIAL(warning) << "Xsession aborted, forcing logout";
+				state.set(State::Error);
+				break;
+		}
+
+		switch (countdown->status) {
+			case RobustChild::State::ready:
+			case RobustChild::State::running:
+				// Non-login related interruption
+				break;
+			case RobustChild::State::stopping: // Should not happen since we never call stop()
+				BOOST_LOG_TRIVIAL(error) << "Countdown process stopping unexpectedly";
+				state.set(State::Error);
+				break;
+			case RobustChild::State::finished:
+				BOOST_LOG_TRIVIAL(info) << "Countdown reached zero, logging out";
+				state.set(State::Resetting);
+				break;
+			case RobustChild::State::failed:
+				BOOST_LOG_TRIVIAL(warning) << "Countdown aborted, forcing logout";
+				state.set(State::Error);
+				break;
+		}
+	}
+}
+
+
+void run(const config_data config) {
+	auto poller = make_shared<Poller>();
+	StateTracker state;
+
+	do {
+		switch (state.get()) {
+			case State::Initializing:
+			case State::Idle:
+				runLoginState(poller, state, config);
+				break;
+			case State::LoggingIn:
+			case State::InUse:
+				runDesktopState(poller, state, config);
+				break;
+			case State::Resetting:
+			case State::Error:
+				break;
+		}
+	} while (state!=State::Error);
+}
+
+
 int main(int argc, char *argv[]) {
 	po::options_description desc("Allowed options");
+	config_data config {false};
+
 	desc.add_options()
-		("debug", "Enable debugging mode.")
+		("debug",
+		 "Enable debugging mode.")
 		("help", "Display this help and exit.")
+		("welcome",
+		 po::value<string>(&config.welcome_command)->default_value(LIBEXEC_PATH "/welcome"),
+		 "Path to welcome command")
+		("countdown",
+		 po::value<string>(&config.countdown_command)->default_value(LIBEXEC_PATH "/countdown"),
+		 "Path to countdown command")
+		("xsession",
+		 po::value<string>(&config.xsession_command)->default_value(XSESSION_PATH),
+		 "Path for XSession command")
 		;
-	po::variables_map config;
+	po::variables_map po_config;
 	try {
-		po::store(po::parse_command_line(argc, argv, desc), config);
+		po::store(po::parse_command_line(argc, argv, desc), po_config);
 	} catch (const po::error& e) {
 		cerr << "Invalid commandline option: " << e.what() << endl
 			<< endl
 			<< desc << endl;
 		return 1;
 	}
-	po::notify(config);
-	if (config.count("help")) {
+	po::notify(po_config);
+	if (po_config.count("help")) {
 		cout << desc << endl;
 		return 0;
 	}
+	config.debug=!!po_config.count("debug");
 
-	setupLogging(config.count("debug"));
-
-	shared_ptr<Poller> poller = make_shared<Poller>(); 
-	RobustChild child(poller, {"invalid-command"});
-	child.start();
-	poller->runOnce();
-
+	setupLogging(config.debug);
+	run(config);
 	return 0;
 }

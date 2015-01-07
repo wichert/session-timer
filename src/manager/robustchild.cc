@@ -60,7 +60,7 @@ void RobustChild::stop() {
 void RobustChild::execChild() {
 	const char** argv = new const char*[command.size()+2];
 	for (int i=0; i<command.size(); i++)
-		argv[i]=command[i];
+		argv[i]=command[i].c_str();
 	argv[command.size()]=nullptr;
 	execv(argv[0], const_cast<char* const*>(argv));
 	delete []argv;
