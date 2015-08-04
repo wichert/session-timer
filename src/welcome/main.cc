@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
 	auto css = Gtk::CssProvider::create();
 	try {
-		css->load_from_path("welcome.css");
+		css->load_from_path(DATADIR "welcome.css");
 	} catch (const Glib::Error &e) {
 		cerr << "Error loading CSS: " << e.what() << endl;
 		return 1;
