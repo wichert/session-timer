@@ -65,7 +65,7 @@ void runLoginState(shared_ptr<Poller> poller, StateTracker &state, const config_
 
 	while (state==State::Idle) {
 		poller->runOnce();
-		switch (login->status) {
+		switch (login->state) {
 			case RobustChild::State::ready:
 			case RobustChild::State::running:
 				// Non-login related interruption
@@ -96,7 +96,7 @@ void runDesktopState(shared_ptr<Poller> poller, StateTracker &state, const confi
 
 	while (state==State::InUse) {
 		poller->runOnce();
-		switch (xsession->status) {
+		switch (xsession->state) {
 			case RobustChild::State::ready:
 			case RobustChild::State::running:
 				break;
@@ -113,7 +113,7 @@ void runDesktopState(shared_ptr<Poller> poller, StateTracker &state, const confi
 				break;
 		}
 
-		switch (countdown->status) {
+		switch (countdown->state) {
 			case RobustChild::State::ready:
 			case RobustChild::State::running:
 				// Non-login related interruption

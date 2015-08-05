@@ -11,7 +11,7 @@ RobustChild::RobustChild(shared_ptr<Poller> poller, command_type&& command) :
 		poller(poller),
 		command(command),
 		signal_handler(make_shared<SignalFD>(SIGCHLD)),
-		status(State::ready),
+		state(State::ready),
 		pid(-1),
 		error_count(0) {
 	signal_handler->connect([&](const signalfd_siginfo& info) {
@@ -22,24 +22,24 @@ RobustChild::RobustChild(shared_ptr<Poller> poller, command_type&& command) :
 
 
 RobustChild::~RobustChild() {
-	if (status==State::running)
+	if (state==State::running)
 		stop();
 	poller->erase(signal_handler);
 }
 
 
 void RobustChild::start() {
-	if (status==State::running || status==State::stopping)
+	if (state==State::running || state==State::stopping)
 		throw logic_error("Can  not start a running process.");
-	status=State::running;
+	state=State::running;
 	if ((pid=fork())==-1) {
-		status=State::failed;
+		state=State::failed;
 		throw system_error(errno, generic_category());
 	} else if (pid==0) {
 		try {
 			execChild();
 		} catch(const exception&) { 
-			status=State::failed;
+			state=State::failed;
 			throw;
 		}
 	}
@@ -47,11 +47,11 @@ void RobustChild::start() {
 
 
 void RobustChild::stop() {
-	if (status==State::stopping)
+	if (state==State::stopping)
 		return;
-	if (status!=State::running)
+	if (state!=State::running)
 		throw logic_error("Can  not stop a process which is not running.");
-	status=State::stopping;
+	state=State::stopping;
 	if (kill(pid, SIGTERM)==-1)
 		throw system_error(errno, generic_category());
 }
@@ -80,23 +80,23 @@ void RobustChild::onChildSignal(const signalfd_siginfo& info) {
 		case CLD_EXITED:
 			if (info.ssi_status!=0) {
 				BOOST_LOG_TRIVIAL(warning) << "Child exited with exit code " << info.ssi_status;
-				status=State::failed;
+				state=State::failed;
 				error_count++;
 			} else {
 				BOOST_LOG_TRIVIAL(info) << "Child exited normally";
-				status=State::finished;
+				state=State::finished;
 			}
 			break;
 		case CLD_KILLED:
 		case CLD_DUMPED:
 			BOOST_LOG_TRIVIAL(warning) << "Child killed with signal " << info.ssi_status;
-			status=State::failed;
+			state=State::failed;
 			error_count++;
 			can_retry=true;
 			break;
 	}
 
-	if (can_retry && status==State::failed && error_count<5) {
+	if (can_retry && state==State::failed && error_count<5) {
 		BOOST_LOG_TRIVIAL(info) << "Restarting child process";
 		start();
 	}

@@ -23,7 +23,7 @@ public:
 	void start();
 	void stop();
 
-	State status; // XXX Rename to state
+	State state;
 
 private:
 	void execChild();
