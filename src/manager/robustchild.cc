@@ -8,10 +8,10 @@
 using namespace std;
 
 RobustChild::RobustChild(shared_ptr<Poller> poller, command_type&& command) :
+		state(State::ready),
 		poller(poller),
 		command(command),
 		signal_handler(make_shared<SignalFD>(SIGCHLD)),
-		state(State::ready),
 		pid(-1),
 		error_count(0) {
 	signal_handler->connect([&](const signalfd_siginfo& info) {
@@ -59,7 +59,7 @@ void RobustChild::stop() {
 
 void RobustChild::execChild() {
 	const char** argv = new const char*[command.size()+2];
-	for (int i=0; i<command.size(); i++)
+	for (decltype(command)::size_type i=0; i<command.size(); i++)
 		argv[i]=command[i].c_str();
 	argv[command.size()]=nullptr;
 	execv(argv[0], const_cast<char* const*>(argv));
