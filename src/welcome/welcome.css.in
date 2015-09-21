@@ -1,0 +1,14 @@
+#root {
+	background-image: url("${CMAKE_INSTALL_FULL_DATADIR}/welcome/wallpaper.jpg");
+	border-image-repeat: stretch;
+}
+
+#container {
+}
+
+GtkButton {
+	background: -gtk-gradient (linear, left top, left bottom, from(#fff), to(#666));
+	margin: 15px;
+	font-size: 40px;
+	font-weight: bold;
+}
