@@ -44,6 +44,18 @@ int main(int argc, char *argv[]) {
 	DBus::default_dispatcher=&dbus_dispatcher;
 
 	CountWindow window(chrono::minutes(config["period"].as<int>()), chrono::minutes(config["idle-timeout"].as<int>()));
+
+	auto css = Gtk::CssProvider::create();
+	try {
+		css->load_from_path(DATADIR "countdown.css");
+	} catch (const Glib::Error &e) {
+		cerr << "Error loading CSS: " << e.what() << endl;
+		return 1;
+	}
+	auto screen = Gdk::Screen::get_default();
+	auto ctx = Gtk::StyleContext::create();
+	ctx->add_provider_for_screen(screen, css, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
 	return app->run(window, 1, argv);
 }
 

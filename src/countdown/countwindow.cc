@@ -50,6 +50,7 @@ CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes 
 	set_resizable(false);
 	set_keep_above();
 	set_decorated(false);
+	set_name("root");
 	stick();
 
 	Gdk::Geometry geometry;
@@ -59,12 +60,17 @@ CountWindow::CountWindow(const chrono::minutes _lifetime, const chrono::minutes 
 
 	time_label.set_justify(Gtk::JUSTIFY_CENTER);
 	time_label.set_padding(5, 0);
+	time_label.set_name("time-label");
 	content_grid.attach(time_label, 0, 0, 1, 1);
 	update_clock();
 
 	logout_button.set_label("Logout");
 	logout_button.set_image_from_icon_name(GTK_STOCK_QUIT);
 	logout_button.set_always_show_image();
+	logout_button.set_name("logout");
+	logout_button.signal_clicked().connect([this]() {
+		this->on_logout_button();
+	});
 	content_grid.attach_next_to(logout_button, time_label, Gtk::POS_RIGHT, 1, 1);
 
 	add(content_grid);
@@ -204,14 +210,41 @@ bool CountWindow::on_delete_event(GdkEventAny* event) {
 }
 
 
+void CountWindow::on_logout_button() {
+	try {
+		XfceSessionManagerProxy xfce(dbus_connection);
+		if (xfce.active()) {
+			xfce.Logout(true, false);
+			return;
+		} else
+			cerr <<  "No XFCE session manager active" << endl;
+	} catch (const DBus::Error& e) {
+		cerr << "DBus XFCE error:" << e.message() << endl;
+	}
+
+	try {
+		GnomeSessionManagerProxy gnome(dbus_connection);
+		if (gnome.active()) {
+			gnome.Logout(GnomeSessionManagerProxy::LogoutMode::Normal);
+			return;
+		} else
+			cerr << "No GNOME sessino manager active" << endl;
+	} catch (const DBus::Error& e) {
+		cerr << "DBus GNOME error:" << e.message() << endl;
+	}
+}
+
+
 void CountWindow::logout() {
 	try {
 		XfceSessionManagerProxy xfce(dbus_connection);
 		if (xfce.active()) {
 			xfce.Logout(false, false);
 			return;
-		}
-	} catch (const DBus::Error&) {
+		} else
+			cerr <<  "No XFCE session manager active" << endl;
+	} catch (const DBus::Error& e) {
+		cerr << "DBus XFCE error:" << e.message() << endl;
 	}
 
 	try {
@@ -219,14 +252,16 @@ void CountWindow::logout() {
 		if (gnome.active()) {
 			gnome.Logout(GnomeSessionManagerProxy::LogoutMode::NoConfirmation);
 			return;
-		}
-	} catch (const DBus::Error&) {
+		} else
+			cerr << "No GNOME sessino manager active" << endl;
+	} catch (const DBus::Error& e) {
+		cerr << "DBus GNOME error:" << e.message() << endl;
 	}
 
 	// No (supported) session manager found. So lets fall back to a
 	// somewhat brutal but effective approach: kill all our processes.
 	if (kill(-1, SIGTERM)==-1) {
-		cerr << "FATAL: failed to send TERM signal: " << strerror(errno);
+		cerr << "FATAL: failed to send TERM signal: " << strerror(errno) << endl;
 		throw system_error(error_code(errno, generic_category()));
 	}
 }

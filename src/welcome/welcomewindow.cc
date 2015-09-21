@@ -5,6 +5,12 @@ WelcomeWindow::WelcomeWindow() :
 	alignment(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 0, 0),
 	login_button()
 {
+	auto screen = Gdk::Screen::get_default();
+
+	// For situationsn without a window manager
+	move(0, 0);
+	resize(screen->get_width(), screen->get_height());
+	// Just in case we do have a window manager
 	fullscreen();
 
 	set_name("root");

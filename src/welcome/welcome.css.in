@@ -1,5 +1,5 @@
 #root {
-	background-image: url("${CMAKE_INSTALL_FULL_DATADIR}/welcome/wallpaper.jpg");
+	background-image: url("${CMAKE_INSTALL_FULL_DATADIR}/attingo/welcome-bg.jpg");
 	border-image-repeat: stretch;
 }
 

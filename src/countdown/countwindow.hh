@@ -15,6 +15,7 @@ public:
 	virtual ~CountWindow();
 
 protected:
+	void on_logout_button();
 	void logout();
 	void show_deadline_warning();
 	void show_idle_warning();
