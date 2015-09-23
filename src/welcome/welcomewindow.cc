@@ -16,7 +16,7 @@ WelcomeWindow::WelcomeWindow() :
 	set_name("root");
 
 	login_button.set_name("login-button");
-	login_button.set_label("Login");
+	login_button.set_label("Start");
 	login_button.signal_clicked().connect(
 			sigc::mem_fun(*this, &WelcomeWindow::start_session));
 
