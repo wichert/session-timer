@@ -1,3 +1,10 @@
+session-timer (1.1) unstable; urgency=low
+
+  * Change default session timeout to 60 minutes.
+
+ -- Wichert Akkerman <wichert@wiggy.net>  Wed, 23 Sep 2015 14:56:44 +0200
+
+
 session-timer (1.0) unstable; urgency=low
 
   * Initial release

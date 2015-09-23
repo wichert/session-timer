@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help", "Display this help and exit.")
-		("period", po::value<int>()->value_name("MINUTES")->default_value(30), "Maximum session period in minutes")
+		("period", po::value<int>()->value_name("MINUTES")->default_value(60), "Maximum session period in minutes")
 		("idle-timeout", po::value<int>()->value_name("MINUTES")->default_value(5), "Maximum idle timeout in minutes")
 		;
 	po::variables_map config;
