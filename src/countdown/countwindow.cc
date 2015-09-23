@@ -136,8 +136,8 @@ void CountWindow::show_idle_warning() {
 	idle_warning_dialog->set_secondary_text(
 			"You do not seem to be using this computer anymore. If you "
 			"remain idle <b>you will be logged automatcially in one "
-			"minute</b> if you remain idle. Please note that when "
-			"this happens <b>all your data will be deleted</b>.",
+			"minute</b>. Please note that when this happens <b>all "
+			"your data will be deleted</b>.",
 			true);
 
 	idle_warning_dialog->signal_response().connect([&] (int response_id) {
