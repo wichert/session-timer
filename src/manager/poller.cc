@@ -40,18 +40,19 @@ void Poller::runForever() {
 
 
 
-void Poller::runOnce() {
+int Poller::runOnce(int timeout) {
 	if (empty())
-		return;
+		return 0;
 
 	epoll_event events[10];
 	int event_count, i;
 
-	if ((event_count=epoll_wait(epoll_fd, events, 10, -1))==-1)
+	if ((event_count=epoll_wait(epoll_fd, events, 10, timeout))==-1)
 		throw system_error(errno, system_category());
 	for (i=0; i<event_count; i++) {
 		auto p = reinterpret_cast<Pollee*>(events[i].data.ptr);
 		p->update();
 	}
+	return event_count;
 }
 

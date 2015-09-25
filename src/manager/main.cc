@@ -1,6 +1,7 @@
 #include <sys/wait.h>
 #include <cerrno>
 #include <csignal>
+#include <chrono>
 #include <iostream>
 #include <system_error>
 #include <boost/make_shared.hpp>
@@ -23,6 +24,7 @@ namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
 
+constexpr auto status_interval = chrono::minutes(5);
 
 /*
  * 1. Start the welcome command
@@ -65,25 +67,30 @@ void runLoginState(shared_ptr<Poller> poller, StateTracker &state, const config_
 	login->start();
 
 	while (state==State::Idle) {
-		poller->runOnce();
-		switch (login->state) {
-			case RobustChild::State::ready:
-			case RobustChild::State::running:
-				// Non-login related interruption
-				break;
-			case RobustChild::State::stopping: // Should not happen since we never call stop()
-				BOOST_LOG_TRIVIAL(error) << "Login process stopping unexpectedly";
-				state.set(State::Error);
-				break;
-			case RobustChild::State::finished:
-				BOOST_LOG_TRIVIAL(info) << "Login process exited without error";
-				state.set(State::InUse, false);
-				break;
-			case RobustChild::State::failed:
-				BOOST_LOG_TRIVIAL(warning) << "Login process exited with error";
-				state.set(State::Error);
-				break;
-		}
+		auto next_state = state.get();
+		auto track = true;
+
+		if (poller->runOnce(status_interval))
+			switch (login->state) {
+				case RobustChild::State::ready:
+				case RobustChild::State::running:
+					// Non-login related interruption
+					break;
+				case RobustChild::State::stopping: // Should not happen since we never call stop()
+					BOOST_LOG_TRIVIAL(error) << "Login process stopping unexpectedly";
+					next_state = State::Error;
+					break;
+				case RobustChild::State::finished:
+					BOOST_LOG_TRIVIAL(info) << "Login process exited without error";
+					track = false;
+					next_state = State::InUse;
+					break;
+				case RobustChild::State::failed:
+					BOOST_LOG_TRIVIAL(warning) << "Login process exited with error";
+					next_state = State::Error;
+					break;
+			}
+		state.set(next_state, track);
 	}
 }
 
@@ -96,42 +103,47 @@ void runDesktopState(shared_ptr<Poller> poller, StateTracker &state, const confi
 	countdown->start();
 
 	while (state==State::InUse) {
-		poller->runOnce();
-		switch (xsession->state) {
-			case RobustChild::State::ready:
-			case RobustChild::State::running:
-				break;
-			case RobustChild::State::stopping: // Should not happen since we never call stop()
-				state.set(State::Error);
-				break;
-			case RobustChild::State::finished:
-				BOOST_LOG_TRIVIAL(info) << "Xsession lougout";
-				state.set(State::Resetting);
-				break;
-			case RobustChild::State::failed:
-				BOOST_LOG_TRIVIAL(warning) << "Xsession aborted, forcing logout";
-				state.set(State::Error);
-				break;
+		auto next_state = state.get();
+
+		if (poller->runOnce(status_interval)) {
+			switch (xsession->state) {
+				case RobustChild::State::ready:
+				case RobustChild::State::running:
+					break;
+				case RobustChild::State::stopping: // Should not happen since we never call stop()
+					next_state = State::Error;
+					break;
+				case RobustChild::State::finished:
+					BOOST_LOG_TRIVIAL(info) << "Xsession lougout";
+					next_state = State::Resetting;
+					break;
+				case RobustChild::State::failed:
+					BOOST_LOG_TRIVIAL(warning) << "Xsession aborted, forcing logout";
+					next_state = State::Error;
+					break;
+			}
+
+			switch (countdown->state) {
+				case RobustChild::State::ready:
+				case RobustChild::State::running:
+					// Non-login related interruption
+					break;
+				case RobustChild::State::stopping: // Should not happen since we never call stop()
+					BOOST_LOG_TRIVIAL(error) << "Countdown process stopping unexpectedly";
+					next_state = State::Error;
+					break;
+				case RobustChild::State::finished:
+					BOOST_LOG_TRIVIAL(info) << "Countdown reached zero, logging out";
+					next_state = State::Resetting;
+					break;
+				case RobustChild::State::failed:
+					BOOST_LOG_TRIVIAL(warning) << "Countdown aborted, forcing logout";
+					next_state = State::Error;
+					break;
+			}
 		}
 
-		switch (countdown->state) {
-			case RobustChild::State::ready:
-			case RobustChild::State::running:
-				// Non-login related interruption
-				break;
-			case RobustChild::State::stopping: // Should not happen since we never call stop()
-				BOOST_LOG_TRIVIAL(error) << "Countdown process stopping unexpectedly";
-				state.set(State::Error);
-				break;
-			case RobustChild::State::finished:
-				BOOST_LOG_TRIVIAL(info) << "Countdown reached zero, logging out";
-				state.set(State::Resetting);
-				break;
-			case RobustChild::State::failed:
-				BOOST_LOG_TRIVIAL(warning) << "Countdown aborted, forcing logout";
-				state.set(State::Error);
-				break;
-		}
+		state.set(next_state);
 	}
 }
 

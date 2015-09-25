@@ -1,6 +1,7 @@
 #ifndef MGR_POLLER_INCLUDED
 #define MGR_POLLER_INCLUDED
 
+#include <chrono>
 #include <memory>
 #include <set>
 
@@ -37,7 +38,10 @@ public:
 	Poller& operator=(const Poller&) = delete;
 
 	void runForever();
-	void runOnce();
+	int runOnce(int timeout=-1);  // Return the event count
+	int runOnce(std::chrono::milliseconds timeout) {
+		return runOnce(timeout.count());
+	}
 
 	iterator begin() noexcept {
 		return fds.begin();

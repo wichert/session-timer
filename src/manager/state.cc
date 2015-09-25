@@ -22,9 +22,6 @@ string hostname() {
 constexpr auto body_format = "<?xml version=\"1.0\"?>\n<status>%s</status>";
 
 void StateTracker::set(State st, bool track) {
-	if (state==st)
-		return;
-
 	state = st;
 
 	istringstream body((boost::format(body_format) % to_string(st)).str());
