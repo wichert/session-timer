@@ -11,6 +11,7 @@
 #include <boost/log/sinks/syslog_backend.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/program_options.hpp>
+#include <curlpp/cURLpp.hpp>
 #include "null_deleter.hh"
 #include "robustchild.hh"
 #include "state.hh"
@@ -76,7 +77,7 @@ void runLoginState(shared_ptr<Poller> poller, StateTracker &state, const config_
 				break;
 			case RobustChild::State::finished:
 				BOOST_LOG_TRIVIAL(info) << "Login process exited without error";
-				state.set(State::LoggingIn, false);
+				state.set(State::InUse, false);
 				break;
 			case RobustChild::State::failed:
 				BOOST_LOG_TRIVIAL(warning) << "Login process exited with error";
@@ -145,7 +146,6 @@ void run(const config_data config) {
 			case State::Idle:
 				runLoginState(poller, state, config);
 				break;
-			case State::LoggingIn:
 			case State::InUse:
 				runDesktopState(poller, state, config);
 				break;
@@ -192,6 +192,7 @@ int main(int argc, char *argv[]) {
 	config.debug=!!po_config.count("debug");
 
 	setupLogging(config.debug);
+	curlpp::initialize();
 	run(config);
 	return 0;
 }

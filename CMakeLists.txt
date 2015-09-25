@@ -45,9 +45,9 @@ find_package(Boost REQUIRED COMPONENTS program_options log system thread log)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-find_package(cppnetlib 0.11.0 REQUIRED)
-include_directories(${CPPNETLIB_INCLUDE_DIRS})
-link_directories(${CPPNETLIB_LIB_DIRS})
+pkg_check_modules(CURLPP curlpp REQUIRED)
+include_directories(SYSTEM ${CURLPP_INCLUDE_DIRS})
+link_directories(${CURLPP_LIBRARY_DIRS})
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
 

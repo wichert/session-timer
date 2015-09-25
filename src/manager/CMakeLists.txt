@@ -20,7 +20,7 @@ target_link_libraries(kiosk-manager
 	${Boost_LOG_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_THREAD_LIBRARY}
-	${CPPNETLIB_LIBRARIES}
+	${CURLPP_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS kiosk-manager

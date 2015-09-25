@@ -1,4 +1,5 @@
 #include <cerrno>
+#include <iostream>
 #include <stdexcept>
 #include <system_error>
 #include <unistd.h>
@@ -30,7 +31,7 @@ RobustChild::~RobustChild() {
 
 void RobustChild::start() {
 	if (state==State::running || state==State::stopping)
-		throw logic_error("Can  not start a running process.");
+		throw logic_error("Can not start a running process.");
 	state=State::running;
 	if ((pid=fork())==-1) {
 		state=State::failed;
@@ -38,9 +39,10 @@ void RobustChild::start() {
 	} else if (pid==0) {
 		try {
 			execChild();
-		} catch(const exception&) { 
+		} catch (const exception& e) {
+			cerr << "Error starting " << command.front() << ": " << e.what() << endl;
 			state=State::failed;
-			throw;
+			abort();
 		}
 	}
 }
