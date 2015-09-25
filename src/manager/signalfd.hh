@@ -12,14 +12,14 @@ public:
 	typedef boost::signals2::signal<void(const signalfd_siginfo&)> signal_type;
 
 	SignalFD() = delete;
-	SignalFD(int signal);
+	SignalFD(int signal, int flags=0);
 	~SignalFD();
 
 	// No copying
 	SignalFD(const SignalFD&) = delete;
 	SignalFD& operator=(const SignalFD&) = delete;
 
-	void add_signal(int signal);
+	void add_signal(int signal, int flags=0);
 
 	int fd() const {
 		return signal_fd;

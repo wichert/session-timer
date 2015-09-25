@@ -7,13 +7,13 @@
 using namespace std;
 
 
-SignalFD::SignalFD(int signal) :
+SignalFD::SignalFD(int signal, int flags) :
 		signal(),
 		signal_fd(-1) {
 	sigemptyset(&mask);
 	if (sigprocmask(SIG_BLOCK, nullptr, &original_mask)==-1)
 		throw system_error(errno, system_category());
-	add_signal(signal);
+	add_signal(signal, flags);
 }
 
 
@@ -23,7 +23,14 @@ SignalFD::~SignalFD() {
 }
 
 
-void SignalFD::add_signal(int signal) {
+void SignalFD::add_signal(int signal, int flags) {
+	if (flags) {
+		struct sigaction act;
+		sigaction(signal, nullptr, &act);
+		act.sa_flags=flags;
+		sigaction(signal, &act, nullptr);
+	}
+
 	sigaddset(&mask, signal);
 	if (sigprocmask(SIG_BLOCK, &mask, nullptr)==-1)
 		throw system_error(errno, system_category());

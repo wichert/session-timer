@@ -12,7 +12,7 @@ RobustChild::RobustChild(shared_ptr<Poller> poller, command_type&& command) :
 		state(State::ready),
 		poller(poller),
 		command(command),
-		signal_handler(make_shared<SignalFD>(SIGCHLD)),
+		signal_handler(make_shared<SignalFD>(SIGCHLD, SA_NOCLDWAIT|SA_NOCLDSTOP)),
 		pid(-1),
 		error_count(0) {
 	signal_handler->connect([&](const signalfd_siginfo& info) {
