@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 enable_testing()
 
 set(PACKGE countdown)
-set(VERSION 1.0.0)
+set(VERSION 1.2.0)
 set(COPYRIGHT_HOLDER Attingo Services B.V.)
 set(PACKAGE_BUGREPORT wichert@simplon.biz)
 
