@@ -188,8 +188,8 @@ void CountWindow::update_clock() {
 	chrono::seconds remaining = time_remaining();
 	Pango::AttrList label_attributes;
 	auto lifetime_seconds = chrono::duration_cast<chrono::seconds>(lifetime).count();
-	auto red = 65535 * (static_cast<float>(lifetime_seconds - remaining.count()) / lifetime_seconds);
-	auto colour = Pango::Attribute::create_attr_foreground(red, 0, 0);
+	auto redness = 65535 - 65535 * (static_cast<float>(lifetime_seconds - remaining.count()) / lifetime_seconds);
+	auto colour = Pango::Attribute::create_attr_foreground(65535, redness, redness);
 	label_attributes.change(colour);
 	time_label.set_attributes(label_attributes);
 
