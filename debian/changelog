@@ -1,3 +1,9 @@
+session-timer (1.3) unstable; urgency=low
+
+  * Update welcome background image.
+
+ -- Wichert Akkerman <wichert@wiggy.net>  UNRELEASED
+
 session-timer (1.2) unstable; urgency=low
 
   * Fix status monitoring.
