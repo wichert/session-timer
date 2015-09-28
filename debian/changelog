@@ -3,7 +3,7 @@ session-timer (1.3) unstable; urgency=low
   * Update welcome screen.
   * Change styling of countdown bar to a simpler black with white button.
 
- -- Wichert Akkerman <wichert@wiggy.net>  UNRELEASED
+ -- Wichert Akkerman <wichert@wiggy.net>  Mon, 28 Sep 2015 21:25:51 +0200
 
 session-timer (1.2) unstable; urgency=low
 
