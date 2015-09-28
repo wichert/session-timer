@@ -7,8 +7,14 @@
 }
 
 GtkButton {
-	background: -gtk-gradient (linear, left top, left bottom, from(#fff), to(#666));
+	background-image: none;
+	background-color: white;
+	border-radius: 5px;
+	border-style: none;
 	margin: 15px;
-	font-size: 40px;
-	font-weight: bold;
+}
+
+GtkButton GtkLabel {
+	color: black;
+	font-size: 40;
 }
