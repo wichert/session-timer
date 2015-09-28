@@ -2,7 +2,7 @@
 #include "welcomewindow.hh"
 
 WelcomeWindow::WelcomeWindow() :
-	alignment(0.025, 0.75, 0, 0),
+	alignment(0.030, 0.55, 0, 0),
 	login_button()
 {
 	auto screen = Gdk::Screen::get_default();
